@@ -29,7 +29,8 @@ def linreg(df,
     X_regular = [df[independent_variables]]
     
     def get_dummies(s, name):
-        dummies = pd.get_dummies(s)
+        dummies = pd.get_dummies(s, prefix=name, prefix_sep=': ')
+        dummies = dummies.drop(columns=dummies.sum().idxmax())
         return dummies
     
     X_categoric = [get_dummies(df[x], x) for x in categoric_independent_variables]

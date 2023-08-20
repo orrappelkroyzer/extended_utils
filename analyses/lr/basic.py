@@ -157,12 +157,11 @@ def coeffs_analysis(df,
         fig_dfs += [coeffs_df[name].loc[coeffs_df[name].index.drop(coeffs_df[name].index.intersection(uninteresting_independent_variables))]]
         fig_dfs[-1]['iv'] = fig_dfs[-1].index
         fig_dfs[-1]['dv'] = name
-        fixed_text[name] = kw_args.get('fixed_text', {})
+        fixed_text[name] = kw_args.get('fixed_text', {})    
         if 'text' in fixed_text[name]:
-                fixed_text[name] += "\nR^2 = %s" % _round(result['results'].rsquared)
+            fixed_text[name] += "\nR^2 = %s" % round(result['results'].rsquared, 2)
         else:
-                fixed_text[name] = "R^2 = %s" % _round(result['results'].rsquared)
-        
+            fixed_text[name] = "R^2 = %s" % round(result['results'].rsquared, 2)
         fixed_text[name] += ", {} datapoints".format(float2str(len(result['X'])))
         
         # if 'P>|t|' in result[0].columns:
@@ -186,7 +185,6 @@ def coeffs_analysis(df,
                      color='iv', 
                      error_x='errors',
                      facet_col='dv',
-                     facet_col_wrap=2,
                      category_orders={'dv' : dependent_variables},
                      color_discrete_sequence  = get_colors(fig_df['iv'].nunique()),
                      title=title)
@@ -200,7 +198,6 @@ def coeffs_analysis(df,
     fixed_text_params['font'] = dict(size=20)
     
     fig.add_annotation(**fixed_text_params)
-    
     fix_and_write(fig=fig, 
                  traces=dict(marker=dict(size=10)),
                  layout_params=dict(showlegend=False),
