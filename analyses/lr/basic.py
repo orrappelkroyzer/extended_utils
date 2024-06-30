@@ -16,6 +16,10 @@ from extended_utils.tools.linreg_tools import linreg
 from extended_utils.analyses.lr.linreg_savers import write_coeffs, save_linreg
 
 
+def get_dummies(s, name):
+    dummies = pd.get_dummies(s, prefix=name, prefix_sep=': ')
+    dummies = dummies.drop(columns=dummies.sum().idxmax())
+    return dummies
 
 def linreg_analysis(df, 
            independent_variables,
@@ -86,16 +90,26 @@ def coeffs_analysis(df,
                             **kw_args)
     
     write_coeffs(linreg_dict=linreg_results, output_dir=output_dir, filename=filename)
-    
-
+    uivs = []
+    for uiv in uninteresting_independent_variables:
+        if uiv in independent_variables:
+            uivs += [uiv]
+        elif uiv in categoric_independent_variables:
+            uivs +=  list(get_dummies(df[uiv], uiv).columns)
+        elif uiv == 'const':
+            uivs += [uiv]
+        else:
+            raise AssertionError(f"Received uiv {uiv} which isn't an iv")
+    logger.info(uivs)
     coeffs_df = {}
     fig_dfs = []
     fixed_text = {}
+
     for name in dependent_variables:
         result= linreg_results[name]
         kw_args = dict(kw_args) 
         coeffs_df[name] = result['results_df'][['coef', 'errors']]
-        fig_dfs += [coeffs_df[name].loc[coeffs_df[name].index.drop(coeffs_df[name].index.intersection(uninteresting_independent_variables))]]
+        fig_dfs += [coeffs_df[name].loc[coeffs_df[name].index.drop(coeffs_df[name].index.intersection(set(uivs)))]]
         fig_dfs[-1]['iv'] = fig_dfs[-1].index
         fig_dfs[-1]['dv'] = name
         fixed_text[name] = kw_args.get('fixed_text', {})    
@@ -136,7 +150,7 @@ def coeffs_analysis(df,
                             x=0, y=0, showarrow=False)
     fixed_text_params.update(kw_args.get('fixed_text', {}).items())
     fixed_text_params['text'] = "<br>".join([": ".join(t) for t in fixed_text.items()])
-    fixed_text_params['font'] = dict(size=20)
+    fixed_text_params['font'] = dict(size=24)
     
     fig.add_annotation(**fixed_text_params)
     fix_and_write(fig=fig, 
