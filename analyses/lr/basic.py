@@ -22,6 +22,7 @@ def linreg_analysis(df,
            dependent_variables,
            output_dir,
            categoric_independent_variables=[],
+           intersection_variables=[],
            filename=None,
            normalizeX=True, 
            normalizeY=True,
@@ -34,6 +35,7 @@ def linreg_analysis(df,
                         independent_variables,
                         dependent_variables,
                         categoric_independent_variables=categoric_independent_variables,
+                        intersection_variables=intersection_variables,
                         normalizeX=normalizeX,
                         normalizeY=normalizeY,
                         weights_variable=weights_variable,
@@ -45,75 +47,13 @@ def linreg_analysis(df,
        save_linreg(linreg_dict, output_dir, filename)
     return linreg_dict
     
-
-# def coeff_surface_analysis(df, 
-    #                        coeffs, 
-    #                        X,
-    #                        Y, 
-    #                        stratifier,
-    #                        n_strata,
-    #                        title="",
-    #                        filename=None,
-    #                        cmap='bwr',
-    #                        x_range=None,
-    #                        y_range=None,
-    #                        normalizeX=False,
-    #                        **kw_args):
-    # cols = list(coeffs.index.drop('const'))
-    # if normalizeX:
-    #     assert False
-    #     if len(cols) == 1:
-    #         df = pd.DataFrame(prepython_MinMaxScaler().fit_transform(df[cols].values.reshape(-1, 1)).T[0], 
-    #                          index=df.index, 
-    #                          columns=cols)
-    #     else:
-    #         df = pd.DataFrame(prepython_MinMaxScaler().fit_transform(df[cols]), 
-    #                                 index=df.index, 
-    #                                 columns=cols)
-    # plotter = SurfacePlotter(num_plots = n_strata)
-    # const = coeffs['const']
-
-    # for k, v in coeffs.iteritems():
-    #     if k in [X, Y, stratifier, 'const']:
-    #         continue
-    #     const += v*df[k].mean()
-    # if normalizeX:
-    #     assert False
-    #     stratifer_consts = [df.loc[df[stratifier].between(i/n_strata, (i+1)/n_strata), 
-    #                           stratifier].mean()*coeffs[stratifier]
-    #                     for i in range(n_strata)]
-    #     x_range = [0, 1]
-    #     y_range = [0, 1]
-        
-    # else:
-    #     stratifer_consts = [df.loc[df[stratifier].between(df[stratifier].quantile(i/n_strata),
-    #                                                  df[stratifier].quantile((i+1)/n_strata)), 
-    #                           stratifier].mean()*coeffs[stratifier]
-    #                     for i in range(n_strata)]
-    #     logger.info(stratifer_consts)
-    
-    # if x_range is None:
-    #     x_range = [df[X].min(), df[X].max()]
-    # if y_range is None:
-    #     y_range = [df[Y].min(), df[Y].max()]
-    # t_df = pd.DataFrame({'x' : x_range, 'y' : y_range}, index=['min', 'max']).T
-    # for i in range(n_strata):
-    #     plot_params = dict(z_func=lambda x, y: coeffs[X]*x+coeffs[Y]*y+const+stratifer_consts[i],
-    #                         cmap=cmap,
-    #                         subtitle="{} quantile {}/{} ({}-{})".format(stratifier, i+1, n_strata, df[stratifier].quantile(i/n_strata), df[stratifier].quantile((i+1)/n_strata)),
-    #                         xlabel=X,
-    #                         ylabel=Y,
-    #                         filename=filename)   
-    #     if 'norm' in kw_args:
-    #         plot_params['norm']=kw_args['norm']
-    #     plotter.plot(df=t_df, ax_index=i, **plot_params)
-
 def coeffs_analysis(df, 
                     output_dir,
                     dependent_variables,
                     linreg_results = None,
                     independent_variables=[],
                     categoric_independent_variables=[],
+                    intersection_variables=[],
                     uninteresting_independent_variables=['const'],
                     normalizeX=True, 
                     normalizeY=True,
@@ -136,6 +76,7 @@ def coeffs_analysis(df,
                             output_dir=output_dir,
                             independent_variables=independent_variables,
                             categoric_independent_variables=categoric_independent_variables,
+                            intersection_variables=intersection_variables,
                             dependent_variables=dependent_variables,
                             filename=filename,
                             normalizeX=normalizeX,

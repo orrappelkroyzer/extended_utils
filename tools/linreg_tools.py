@@ -19,6 +19,7 @@ def linreg(df,
            independent_variables,
            dependent_variables,
            categoric_independent_variables=[],
+           intersection_variables=[],
            weights_variable=None,
            normalizeX=True, 
            normalizeY=True,
@@ -34,7 +35,23 @@ def linreg(df,
         return dummies
     
     X_categoric = [get_dummies(df[x], x) for x in categoric_independent_variables]
-    X_base = pd.concat(X_regular + X_categoric, axis=1)
+    X_intersection = []
+    for intersection_varables_tuple in intersection_variables:
+        if intersection_varables_tuple[0] in categoric_independent_variables:
+            t1 = get_dummies(df[intersection_varables_tuple[0]], intersection_varables_tuple[0])
+        else:
+            t1 = df[[intersection_varables_tuple[0]]]
+        if intersection_varables_tuple[1] in categoric_independent_variables:
+            t2 = get_dummies(df[intersection_varables_tuple[1]], intersection_varables_tuple[0])
+        else:
+            t2 = df[[intersection_varables_tuple[1]]]
+        t = pd.DataFrame(index=t1.index)
+        for col1 in t1.columns:
+            for col2 in t2.columns:
+                t[f'{col1}*{col2}'] = t1[col1] * t2[col2]
+        X_intersection += [t]
+
+    X_base = pd.concat(X_regular + X_categoric + X_intersection, axis=1)
     if 'instruments' in kw_args:
         kw_args['instruments'] = df[kw_args['instruments']]
     if weights_variable is None:
