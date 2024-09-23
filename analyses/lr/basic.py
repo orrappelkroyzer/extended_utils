@@ -71,6 +71,7 @@ def coeffs_analysis(df,
                     sort_values=True,
                     width_factor=1,
                     height_factor=1,
+                    no_colors=False,
                     **kw_args):
     
     assert plotter is None or (ax_index is not None and (len(dependent_variables) == 1) or linreg_results is not None)
@@ -133,7 +134,10 @@ def coeffs_analysis(df,
         fig_df_index = [specified_iv] + fig_df_index
         fig_df = fig_df.loc[fig_df_index]
     fig_df.index = range(len(fig_df))
-    
+    if no_colors:
+        color_discrete_sequence = ['blue']
+    else:
+        color_discrete_sequence = get_colors(fig_df['iv'].nunique())
     fig = px.scatter(fig_df, 
                      x='coef', 
                      y='iv', 
@@ -141,7 +145,7 @@ def coeffs_analysis(df,
                      error_x='errors',
                      facet_col='dv',
                      category_orders={'dv' : dependent_variables},
-                     color_discrete_sequence  = get_colors(fig_df['iv'].nunique()),
+                     color_discrete_sequence  = color_discrete_sequence,
                      title=title)
     fig.update_layout(xaxis_title="Coefficient")
     fig.add_vline(x=0, fillcolor='dark grey')
