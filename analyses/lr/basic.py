@@ -72,6 +72,7 @@ def coeffs_analysis(df,
                     width_factor=1,
                     height_factor=1,
                     no_colors=False,
+                    facet_col_wrap=0,
                     **kw_args):
     
     assert plotter is None or (ax_index is not None and (len(dependent_variables) == 1) or linreg_results is not None)
@@ -89,7 +90,6 @@ def coeffs_analysis(df,
                             nesting_variable=nesting_variable,
                             weights_variable=weights_variable,
                             **kw_args)
-    
     write_coeffs(linreg_dict=linreg_results, output_dir=output_dir, filename=filename)
     uivs = []
     for uiv in uninteresting_independent_variables:
@@ -144,6 +144,7 @@ def coeffs_analysis(df,
                      color='iv', 
                      error_x='errors',
                      facet_col='dv',
+                     facet_col_wrap=facet_col_wrap, 
                      category_orders={'dv' : dependent_variables},
                      color_discrete_sequence  = color_discrete_sequence,
                      title=title)
