@@ -10,10 +10,12 @@ config = load_config(Path(local_python_path) / "config.json")
 
 import pandas as pd
 import plotly.express as px
-from utils.plotly_utils import fix_and_write, get_colors
+from utils.plotly_utils import fix_and_write
 from extended_utils.utils import float2str
 from extended_utils.tools.linreg_tools import linreg
 from extended_utils.analyses.lr.linreg_savers import write_coeffs, save_linreg
+import numpy as np
+import plotly.colors as pc
 
 
 def get_dummies(s, name):
@@ -101,7 +103,6 @@ def coeffs_analysis(df,
             uivs += [uiv]
         else:
             raise AssertionError(f"Received uiv {uiv} which isn't an iv")
-    logger.info(uivs)
     coeffs_df = {}
     fig_dfs = []
     fixed_text = {}
@@ -110,9 +111,10 @@ def coeffs_analysis(df,
         result= linreg_results[name]
         kw_args = dict(kw_args) 
         coeffs_df[name] = result['results_df'][['coef', 'errors']]
-        fig_dfs += [coeffs_df[name].loc[coeffs_df[name].index.drop(coeffs_df[name].index.intersection(set(uivs)))]]
-        fig_dfs[-1]['iv'] = fig_dfs[-1].index
-        fig_dfs[-1]['dv'] = name
+        last_fig_df = coeffs_df[name].loc[coeffs_df[name].index.drop(coeffs_df[name].index.intersection(set(uivs)))]
+        fig_dfs += []
+        last_fig_df['iv'] = last_fig_df.index
+        last_fig_df['dv'] = name
         fixed_text[name] = kw_args.get('fixed_text', {})    
         if 'text' in fixed_text[name]:
             fixed_text[name] += "\nR^2 = %s" % round(result['results'].rsquared, 2)
@@ -122,30 +124,42 @@ def coeffs_analysis(df,
         
         # if 'P>|t|' in result[0].columns:
         #     kw_args['faded_values']=list(result[0][result[0]['P>|t|'] > 0.05].index)
-        if fig_dfs[-1]['errors'].dropna().empty:
+        if last_fig_df['errors'].dropna().empty:
             raise AssertionError("LR failed")
+       
+
+        fig_dfs += [last_fig_df]
     
     fig_df = pd.concat(fig_dfs)
+    fig_df['significant'] = np.sign(fig_df['coef'] - fig_df['errors']) == np.sign(fig_df['coef'] + fig_df['errors'])
+    category_orders={'dv' : dependent_variables}
     if sort_values:
-        fig_df = fig_df.sort_values('coef', ascending=False)
-    if specified_iv:
-        fig_df_index = fig_df.index.tolist()
-        fig_df_index.remove(specified_iv)
-        fig_df_index = [specified_iv] + fig_df_index
-        fig_df = fig_df.loc[fig_df_index]
+        fig_df['abs_coef'] = np.abs(fig_df['coef'])
+        fig_df = fig_df.sort_values(by='abs_coef', ascending=False)
+        fig_df['iv'] = pd.Categorical(fig_df['iv'], categories=fig_df['iv'].unique(), ordered=True)
+        category_orders['iv'] = fig_df['iv'].cat.categories
+
+    # if specified_iv:
+    #     fig_df_index = fig_df.index.tolist()
+    #     fig_df_index.remove(specified_iv)
+    #     fig_df_index = [specified_iv] + fig_df_index
+    #     fig_df = fig_df.loc[fig_df_index]
     fig_df.index = range(len(fig_df))
     if no_colors:
-        color_discrete_sequence = ['blue']
+        color_discrete_sequence = {True: "blue", False: "orange"}
+        color = 'significant'
     else:
-        color_discrete_sequence = get_colors(fig_df['iv'].nunique())
+        N = fig_df['iv'].nunique()
+        color_discrete_sequence = pc.sample_colorscale("rainbow", [i / (N - 1) for i in range(N)])
+        color = 'iv'
     fig = px.scatter(fig_df, 
                      x='coef', 
                      y='iv', 
-                     color='iv', 
+                     color=color, 
                      error_x='errors',
                      facet_col='dv',
                      facet_col_wrap=facet_col_wrap, 
-                     category_orders={'dv' : dependent_variables},
+                     category_orders=category_orders,
                      color_discrete_sequence  = color_discrete_sequence,
                      title=title)
     fig.update_layout(xaxis_title="Coefficient")
