@@ -69,11 +69,10 @@ def coeffs_analysis(df,
                     ax_index=None,
                     nesting_variable=None,
                     weights_variable=None,
-                    specified_iv = None,
                     sort_values=True,
                     width_factor=1,
                     height_factor=1,
-                    no_colors=False,
+                    no_colors=True,
                     facet_col_wrap=0,
                     **kw_args):
     
@@ -130,28 +129,26 @@ def coeffs_analysis(df,
 
         fig_dfs += [last_fig_df]
     
-    fig_df = pd.concat(fig_dfs)
+    fig_df = pd.concat(fig_dfs).reset_index(drop=True)
     fig_df['significant'] = np.sign(fig_df['coef'] - fig_df['errors']) == np.sign(fig_df['coef'] + fig_df['errors'])
     category_orders={'dv' : dependent_variables}
     if sort_values:
         fig_df['abs_coef'] = np.abs(fig_df['coef'])
         fig_df = fig_df.sort_values(by='abs_coef', ascending=False)
-        fig_df['iv'] = pd.Categorical(fig_df['iv'], categories=fig_df['iv'].unique(), ordered=True)
-        category_orders['iv'] = fig_df['iv'].cat.categories
+    fig_df['iv'] = pd.Categorical(fig_df['iv'], categories=fig_df['iv'].unique(), ordered=True)
+    category_orders['iv'] = fig_df['iv'].cat.categories
 
-    # if specified_iv:
-    #     fig_df_index = fig_df.index.tolist()
-    #     fig_df_index.remove(specified_iv)
-    #     fig_df_index = [specified_iv] + fig_df_index
-    #     fig_df = fig_df.loc[fig_df_index]
-    fig_df.index = range(len(fig_df))
+
+    
+
     if no_colors:
-        color_discrete_sequence = {True: "blue", False: "orange"}
+        color_discrete_sequence = {True: "orange", False: "blue"}
         color = 'significant'
     else:
         N = fig_df['iv'].nunique()
         color_discrete_sequence = pc.sample_colorscale("rainbow", [i / (N - 1) for i in range(N)])
         color = 'iv'
+    
     fig = px.scatter(fig_df, 
                      x='coef', 
                      y='iv', 

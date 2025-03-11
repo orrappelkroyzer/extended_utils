@@ -32,8 +32,11 @@ def save_linreg(linreg_dict, output_dir, filename):
             if not os.path.exists(os.path.split(filename)[0]):
                 os.makedirs(os.path.split(filename)[0])
             for k, results in linreg_dict.items():
-                with open(f"{filename}_{k}.txt", 'w') as f:
-                    f.write(str(results['results'].summary()))
+                # logger.info(f"Saving model {k} for {filename}")
+                # with open(f"{filename}_{k}.txt", 'w') as f:
+                #     f.write(str(results['results'].summary()))
+                #     f.close()
+                logger.info(f"Saving model {k} to {output_dir / 'all_models.txt'}")
                 with open(output_dir / "all_models.txt", 'a') as f:
                     f.write(f"Model number {model_count}, {filename.stem}\n".replace("_", " ").upper())
                     f.write(str(results['results'].summary()))
@@ -41,6 +44,9 @@ def save_linreg(linreg_dict, output_dir, filename):
                     model_count += 1
             return
         except:
+            logger.info("Failed to save model, retrying")
+            import traceback
+            logger.error(traceback.format_exc())
             sleep(1)
             continue
 
