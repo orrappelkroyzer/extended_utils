@@ -36,7 +36,7 @@ def save_linreg(linreg_dict, output_dir, filename):
                 # with open(f"{filename}_{k}.txt", 'w') as f:
                 #     f.write(str(results['results'].summary()))
                 #     f.close()
-                logger.info(f"Saving model {k} to {output_dir / 'all_models.txt'}")
+                logger.info(f"Saving model {k} to {output_dir / f'{filename}_models.txt'}")
                 with open(output_dir / "all_models.txt", 'a') as f:
                     f.write(f"Model number {model_count}, {filename.stem}\n".replace("_", " ").upper())
                     f.write(str(results['results'].summary()))

@@ -11,7 +11,6 @@ config = load_config(Path(local_python_path) / "config.json")
 import pandas as pd
 import plotly.express as px
 from utils.plotly_utils import fix_and_write
-from extended_utils.utils import float2str
 from extended_utils.tools.linreg_tools import linreg
 from extended_utils.analyses.lr.linreg_savers import write_coeffs, save_linreg
 import numpy as np
@@ -119,7 +118,7 @@ def coeffs_analysis(df,
             fixed_text[name] += "\nR^2 = %s" % round(result['results'].rsquared, 2)
         else:
             fixed_text[name] = "R^2 = %s" % round(result['results'].rsquared, 2)
-        fixed_text[name] += ", {} datapoints".format(float2str(len(result['X'])))
+        fixed_text[name] += f", {len(result['X'])} datapoints"
         
         # if 'P>|t|' in result[0].columns:
         #     kw_args['faded_values']=list(result[0][result[0]['P>|t|'] > 0.05].index)
